@@ -34,15 +34,41 @@ function pb_get_editor_data(){
 
     if( !$html_content || !$reportage_title ){
         echo wp_json_encode([
-            'status' => 'false',
+            'status' => false,
             'message' => 'لطفا عنوان رپورتاژ و محتوا ارسال شوند'
         ]);
         die();
     }
 
-    $result = [];
+    
+    // Define reportage post data
+    $post_data = array(
+        'post_title'    => $reportage_title,
+        'post_content'  => $html_content,
+        'post_status'   => 'publish',
+        'post_author'   => 1, // user ID of the author
+        'post_category' => array(1) // category IDs
+    );
 
-    echo wp_json_encode($result);
+    // Insert the post into the database
+    $post_id = wp_insert_post($post_data);
+
+    if (!$post_id) {
+        echo wp_json_encode([
+            'status' => false,
+            'message' => 'خطا در انتشار رپورتاژ توسط وبسایت رسانه'
+        ]);
+        die();
+    }
+
+    echo wp_json_encode([
+        'status' => true,
+        'message' => 'رپورتاژ با موفقیت منتشر شد',
+        'data' => [
+            'reportage_link' => get_the_permalink($post_id),
+            'title' => $reportage_title,
+        ]
+    ]);
     die();
 }
 
