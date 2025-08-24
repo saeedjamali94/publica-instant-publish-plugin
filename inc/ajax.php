@@ -40,11 +40,14 @@ function pb_get_editor_data(){
         die();
     }
 
+    // parse html content to fix images and upload them
+    $HTMLParser = new HTMLParser( $html_content );
+    $parsed_html = $HTMLParser->parse();
     
     // Define reportage post data
     $post_data = array(
         'post_title'    => $reportage_title,
-        'post_content'  => $html_content,
+        'post_content'  => $parsed_html,
         'post_status'   => 'publish',
         'post_author'   => 1, // user ID of the author
         'post_category' => array(1) // category IDs

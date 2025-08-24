@@ -22,6 +22,7 @@ define( 'PUBLICA_PANEL_IP' , '1.1.1.1');
 
 
 require_once PUBLICA_PLUGIN_DIR . 'classes/RateLimiter.php';
+require_once PUBLICA_PLUGIN_DIR . 'classes/HTMLParser.php';
 
 
 require_once PUBLICA_PLUGIN_DIR . 'inc/functions.php';
