@@ -65,7 +65,6 @@ function pb_get_editor_data(){
         'post_content'  => $parsed_html,
         'post_status'   => 'publish',
         'post_author'   => 1, // user ID of the author
-        'post_category' => array(1) // category IDs
     );
 
     // Insert the post into the database
@@ -102,7 +101,35 @@ function pb_get_editor_data(){
     }
     
 
-    
+    // set reportage category for the post , first check if this category exists
+    $search = 'رپورتاژ'; // part of the category name you want to match
+
+    $categories = get_terms([
+        'taxonomy'   => 'category',
+        'hide_empty' => false,
+        'name__like' => $search,
+    ]);
+
+    if ( !empty($categories) && !is_wp_error($categories) ) {
+        foreach ($categories as $cat) {
+            // attach this existing category to the post
+            wp_set_post_categories( $post_id, array( $cat->term_id ), true );
+        }
+    }
+    else {
+       
+        // 1. Try to create the category with given name
+        $category_name = "رپورتاژ آگهی";
+        $created_term = wp_insert_term( $category_name, 'category' );
+
+        $created_category_id = $created_term['term_id'];
+
+        // 2. Attach the category to the post
+        wp_set_post_categories( $post_id, array( $created_category_id ), true );
+    }
+
+    // now remove default category (id = 1) from this post
+    wp_remove_object_terms( $post_id, 1, 'category' );
 
     echo wp_json_encode([
         'status' => true,

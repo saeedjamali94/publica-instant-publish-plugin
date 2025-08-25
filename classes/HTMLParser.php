@@ -7,7 +7,7 @@ class HTMLParser
     public string $html_string;
     
     public function __construct( $html_string = '' ){
-        $this->html_string = $html_string;
+        $this->html_string = str_replace( '\"' , '' , $html_string);
     }
 
     /**
