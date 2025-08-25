@@ -31,6 +31,10 @@ function pb_get_editor_data(){
     // check if content and reportage title and h1 is not empty
     $html_content = $_POST["content"] ?: false;
     $reportage_title = $_POST["title"] ?: false;
+    $meta_title = $_POST['meta_title'] ?: false;
+    $meta_gist = $_POST['meta_gist'] ?: false;
+    $meta_desc = $_POST['meta_desc'] ?: false;
+    $tags =  $_POST['selected_tags'] ?: false;
 
     if( !$html_content || !$reportage_title ){
         echo wp_json_encode([
@@ -42,7 +46,18 @@ function pb_get_editor_data(){
 
     // parse html content to fix images and upload them
     $HTMLParser = new HTMLParser( $html_content );
-    $parsed_html = $HTMLParser->parse();
+    $parseResult = $HTMLParser->parse();
+
+    $parsed_html = $parseResult->fullContent;
+    $count_H1 = $parseResult->elementH1['count'];
+
+    if ($count_H1 > 1){
+        echo wp_json_encode([
+            'status' => false,
+            'message' => 'افزودن بیش از یک h1 در محتوا مجاز نیست'
+        ]);
+        die();
+    }
     
     // Define reportage post data
     $post_data = array(
@@ -63,6 +78,31 @@ function pb_get_editor_data(){
         ]);
         die();
     }
+
+    // now build sent tags in wordpress , but first check if they exist
+    if( $tags ){
+        $selected_tags_array = explode(',', $tags);
+        // Trim spaces around each item
+        $selected_tags_array = array_map('trim', $selected_tags_array);
+        if( count($selected_tags_array) > 0 ){
+            foreach( $selected_tags_array as $tag_item ){
+                $exists = term_exists( $tag_item, 'post_tag' );
+                if( $exists ){
+                    wp_set_post_terms( $post_id, $tag_item, 'post_tag', true );
+                }
+                else {
+                    // Try to create the tag 
+                    $new_term = wp_insert_term( $tag_item, 'post_tag' );
+                    $new_term_id = $new_term['term_id'];
+                    wp_set_post_terms( $post_id, array( $new_term_id ), 'post_tag', true );
+
+                }
+            }
+        }
+    }
+    
+
+    
 
     echo wp_json_encode([
         'status' => true,

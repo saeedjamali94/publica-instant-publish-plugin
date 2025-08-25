@@ -33,6 +33,7 @@ class HTMLParser
             $value->setAttribute('alt', $fixedAlt);
 
             $raw_base64_src = str_replace('\"' , '' , $value->getAttribute('src'));
+            $elementImgSrc[] = [ 'src' => $raw_base64_src, 'alt' => $fixedAlt];
 
             // upload image on server instead of using base64 url
             $uploaded_url = $this->uploadImage($raw_base64_src, "rp-img-".rand(1 , 100000));
@@ -42,9 +43,36 @@ class HTMLParser
         $lengthImg  = count($elementImgSrc);
 
 
+        // find all H1 tags
+        $elementH1= $doc->getElementsByTagName('h1');
+        $elementArrayH1 = [];
+        foreach ($elementH1 as $index => $value){
+            // if H1 is Not Empty
+            if( trim($value->nodeValue) !== "" ){
+                $elementArrayH1[] = $value->nodeValue;
+                $snippetH1 .= $value->nodeValue;
+            }
+            else {
+                // remove empty H1
+                $parentNode = $value->parentNode;
+                $parentNode->removeChild($value);
+            }
+        }
+        $lengthH1  = count($elementArrayH1);
+        $explodeH1 = explode(' ' ,$snippetH1);
+        $explodeHCount1 = count($explodeH1);
+
         $modifiedHtml = $doc->saveHTML();
 
-        return $modifiedHtml;
+
+        $elementAll = (object) [
+            'elementImg' => array ('count' => $lengthImg , 'items' => $elementImgSrc) ,
+            'elementH1'  => array('count' => $lengthH1 , 'items' =>  $elementArrayH1) ,
+            'fullContent' => $modifiedHtml,
+        ];
+
+        return $elementAll;
+
     }
 
 
