@@ -103,7 +103,6 @@ function pb_get_editor_data(){
 
     // set reportage category for the post , first check if this category exists
     $search = 'رپورتاژ'; // part of the category name you want to match
-
     $categories = get_terms([
         'taxonomy'   => 'category',
         'hide_empty' => false,
@@ -130,6 +129,21 @@ function pb_get_editor_data(){
 
     // now remove default category (id = 1) from this post
     wp_remove_object_terms( $post_id, 1, 'category' );
+
+    // check and set meta values 
+    if( $meta_title ){
+        // Save/update the meta title
+        update_post_meta( $post_id, '_custom_meta_title', trim(strip_tags($meta_title)) );
+        // Set Yoast SEO meta title
+        update_post_meta( $post_id, '_yoast_wpseo_title', trim(strip_tags($meta_title)) );
+    }
+
+    if( $meta_desc ){
+        // Save/update the meta description
+        update_post_meta( $post_id, '_custom_meta_description', trim(strip_tags($meta_desc)) );
+        // Set Yoast SEO meta description
+        update_post_meta( $post_id, '_yoast_wpseo_metadesc', trim(strip_tags($meta_desc)) );
+    }
 
     echo wp_json_encode([
         'status' => true,
